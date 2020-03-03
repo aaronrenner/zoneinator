@@ -1,20 +1,11 @@
 # Zoneinator
 
-To start your Phoenix server:
+A sample app that I'm using as a playground.
 
-  * Install dependencies with `mix deps.get`
-  * Create and migrate your database with `mix ecto.setup`
-  * Install Node.js dependencies with `cd assets && npm install`
-  * Start Phoenix endpoint with `mix phx.server`
+## Running in docker
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+This app is set up to run in isolation in a docker container.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
-
-## Learn more
-
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+1. Building the image: `docker build -t zoneinator:latest .`
+2. Migrating the database: `docker run -e DATABASE_URL="ecto://postgres:postgres@host.docker.internal/zoneinator_dev" -e SECRET_KEY_BASE=$(mix phx.gen.secret) -p 4000:4000 --rm zoneinator:latest bin/zoneinator eval "Zoneinator.Release.migrate"`
+3. Starting the image: `docker run -e DATABASE_URL="ecto://postgres:postgres@host.docker.internal/zoneinator_dev" -e SECRET_KEY_BASE=$(mix phx.gen.secret) -p 4000:4000 --rm zoneinator:latest bin/zoneinator start`

@@ -1,0 +1,56 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+  build_container:
+    name: Build docker container
+    runs-on: ubuntu-latest
+    services:
+      # Allow accessing localhost ports from docker containers.
+      # See https://github.com/qoomon/docker-host
+      dockerhost:
+        image: qoomon/docker-host
+        options: >-
+          --cap-add=NET_ADMIN
+          --cap-add=NET_RAW
+          --restart on-failure
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: zoneinator_prod
+          POSTGRES_PASSWORD: postgres
+
+    env:
+      DATABASE_URL: "ecto://postgres:postgres@dockerhost/zoneinator_prod"
+      SECRET_KEY_BASE: "csHMFw92/Rkb3p6JiG936DvlM9h/v7MF900pqseNwSv+vOEPOphsVdZMs5Jm92zL"
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build container
+        run: docker build -t zoneinator .
+      - name: Migrate database
+        run: docker run -e DATABASE_URL -e SECRET_KEY_BASE --network ${{ job.container.network }} zoneinator bin/zoneinator eval "Zoneinator.Release.migrate()"
+      - name: Start app
+        id: start_web_container
+        # Echoing ::set-output allows the container id to be used in future steps
+        run: echo ::set-output name=container_id::$(docker run -e DATABASE_URL -e SECRET_KEY_BASE --network ${{ job.container.network }} -p 4000:4000 -d zoneinator bin/zoneinator start)
+      - name: Wait for app to be ready
+        env:
+          WEB_CONTAINER_ID: ${{ steps.start_web_container.outputs.container_id }}
+        # From http://jeromebelleman.gitlab.io/posts/devops/until/
+        run: timeout 60 bash -c "until docker inspect $WEB_CONTAINER_ID | jq -e '.[0].State.Health.Status == \"healthy\"' ; do sleep 2; done"
+      - name: Run Tests
+        run: curl http://localhost:4000
+      - name: Output Docker logs
+        env:
+          WEB_CONTAINER_ID: ${{ steps.start_web_container.outputs.container_id }}
+        run: docker logs $WEB_CONTAINER_ID || true
+        if: always()
+      - name: Stop app container
+        env:
+          WEB_CONTAINER_ID: ${{ steps.start_web_container.outputs.container_id }}
+        run: docker stop $WEB_CONTAINER_ID || true
+        if: always()
