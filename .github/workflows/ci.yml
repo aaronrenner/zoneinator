@@ -51,10 +51,45 @@ jobs:
       - run: mix format --check-formatted
       - run: mix credo --strict
 
+  dialyzer:
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: "dev"
+    strategy:
+      fail-fast: false
+      matrix:
+        elixir: ["1.10.2"]
+        include:
+          - elixir: "1.10.2"
+            otp: "22.2.8"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1.0.0
+        with:
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+      - uses: actions/cache@v1
+        with:
+          path: deps
+          key: ${{ env.CACHE_VERSION }}-deps-build-${{ env.MIX_ENV }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
+      - uses: actions/cache@v1
+        with:
+          path: _build/${{ env.MIX_ENV }}
+          key: ${{ env.CACHE_VERSION }}-_build-${{ env.MIX_ENV }}-${{ matrix.otp }}-${{ matrix.elixir }}-dialyzer
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-_build-${{ env.MIX_ENV }}-${{ matrix.otp }}-${{ matrix.elixir }}-
+      - name: Install Dependencies
+        run: mix deps.get
+      - name: Compile app
+        run: mix compile --force --warnings-as-errors
+      - name: Build PLT
+        run: mix dialyzer --plt
+      - name: Dialyzer
+        run: mix dialyzer --format short
 
   build_container:
     name: Build docker container
-    needs: [test]
+    needs: [test, dialyzer]
     runs-on: ubuntu-latest
     services:
       # Allow accessing localhost ports from docker containers.
