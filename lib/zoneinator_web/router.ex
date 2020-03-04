@@ -17,6 +17,9 @@ defmodule ZoneinatorWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+
+    resources "/users", UserController, only: [:new, :create]
+    resources "/session", SessionController, singleton: true, only: [:delete]
   end
 
   # Other scopes may use custom stacks.
