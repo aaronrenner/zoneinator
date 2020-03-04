@@ -1,4 +1,5 @@
 defmodule Zoneinator.Release do
+  @moduledoc false
   @app :zoneinator
 
   def migrate do
