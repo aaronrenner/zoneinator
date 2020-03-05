@@ -1,0 +1,17 @@
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@postgres/zoneinator_dev"
+      SECRET_KEY_BASE: 6MJoSCyVrlohejRGqhYlA+nOxarNAR5Z7pDzRbIVbtLD1vguCT8lHNg9gRVHNcHi
+    links:
+      - postgres
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: zoneinator_dev
+      POSTGRES_PASSWORD: postgres
