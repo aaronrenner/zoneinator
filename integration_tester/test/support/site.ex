@@ -5,9 +5,14 @@ defmodule Zoneinator.IntegrationTester.TestSupport.Site do
 
   @sign_out_link Query.link("Sign out")
   @sign_up_link Query.link("Sign up")
+  @sign_in_link Query.link("Sign in")
 
   def click_sign_up(session) do
     click(session, @sign_up_link)
+  end
+
+  def click_sign_in(session) do
+    click(session, @sign_in_link)
   end
 
   def log_out(session) do

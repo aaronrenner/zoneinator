@@ -19,7 +19,7 @@ defmodule ZoneinatorWeb.Router do
     get "/", PageController, :index
 
     resources "/users", UserController, only: [:new, :create]
-    resources "/session", SessionController, singleton: true, only: [:delete]
+    resources "/session", SessionController, singleton: true, only: [:new, :create, :delete]
   end
 
   # Other scopes may use custom stacks.
