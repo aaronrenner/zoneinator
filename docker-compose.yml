@@ -1,5 +1,13 @@
 version: '3'
 services:
+  migrator:
+    build: .
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@postgres/zoneinator_dev"
+      SECRET_KEY_BASE: 6MJoSCyVrlohejRGqhYlA+nOxarNAR5Z7pDzRbIVbtLD1vguCT8lHNg9gRVHNcHi
+    command: ["bin/zoneinator", "eval", "Zoneinator.Release.migrate()"]
+    depends_on:
+      - postgres
   web:
     build: .
     ports:
@@ -7,8 +15,9 @@ services:
     environment:
       DATABASE_URL: "postgres://postgres:postgres@postgres/zoneinator_dev"
       SECRET_KEY_BASE: 6MJoSCyVrlohejRGqhYlA+nOxarNAR5Z7pDzRbIVbtLD1vguCT8lHNg9gRVHNcHi
-    links:
+    depends_on:
       - postgres
+      - migrator
 
   postgres:
     image: postgres
