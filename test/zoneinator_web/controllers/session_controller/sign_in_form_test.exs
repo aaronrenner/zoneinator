@@ -8,13 +8,15 @@ defmodule ZoneinatorWeb.SessionController.SignInFormTest do
     assert %Changeset{} = SignInForm.changeset()
   end
 
-  test "run/1 returns :ok with valid email and password" do
+  test "run/1 returns {:ok, user_id} with valid email and password" do
     email = "a@a.com"
     password = "password"
 
     :ok = Zoneinator.register_user(email, password)
 
-    assert :ok = SignInForm.run(%{"email" => email, "password" => password})
+    assert {:ok, user_id} = SignInForm.run(%{"email" => email, "password" => password})
+
+    assert is_binary(user_id)
   end
 
   test "run/1 returns {:error, changeset} when missing email and password" do

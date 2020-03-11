@@ -12,9 +12,9 @@ defmodule ZoneinatorWeb.SessionController do
 
   def create(conn, %{"sign_in_form" => form_params}) do
     case SignInForm.run(form_params) do
-      :ok ->
+      {:ok, user_id} ->
         conn
-        |> Authentication.log_in()
+        |> Authentication.log_in(user_id)
         |> redirect(to: Routes.page_path(conn, :index))
 
       {:error, changeset} ->

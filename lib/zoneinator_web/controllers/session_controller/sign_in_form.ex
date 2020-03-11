@@ -10,7 +10,7 @@ defmodule ZoneinatorWeb.SessionController.SignInForm do
     field :password, :string
   end
 
-  @spec run(map) :: :ok | {:error, Changeset.t()}
+  @spec run(map) :: {:ok, User.id()} | {:error, Changeset.t()}
   def run(params) when is_map(params) do
     changeset = changeset(%__MODULE__{}, params)
 

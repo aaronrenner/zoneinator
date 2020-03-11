@@ -13,7 +13,10 @@ defmodule Zoneinator.User do
     field :password_hash, :string
   end
 
+  @type id :: String.t()
+
   @type t :: %__MODULE__{
+          id: id | nil,
           email: String.t() | nil,
           password: String.t() | nil,
           password_hash: String.t() | nil

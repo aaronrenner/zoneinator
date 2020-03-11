@@ -9,17 +9,34 @@ defmodule Zoneinator do
   @doc """
   Registers a new user.
   """
-  @spec register_user(String.t(), String.t()) :: :ok | {:error, :email_already_registered}
+  @spec register_user(String.t(), String.t()) ::
+          {:ok, User.id()} | {:error, :email_already_registered}
   def register_user(email, password) when is_binary(email) and is_binary(password) do
     %User{}
     |> User.changeset(%{email: email, password: password})
     |> Repo.insert()
     |> case do
-      {:ok, _user} ->
-        :ok
+      {:ok, %User{id: user_id}} ->
+        {:ok, user_id}
 
       {:error, _changeset} ->
         {:error, :email_already_registered}
+    end
+  end
+
+  @doc """
+  Fetches a user by id
+  """
+  @spec fetch_user(User.id()) :: {:ok, User.t()} | {:error, :not_found}
+  def fetch_user(user_id) do
+    User
+    |> Repo.get(user_id)
+    |> case do
+      %User{} = user ->
+        {:ok, user}
+
+      nil ->
+        {:error, :not_found}
     end
   end
 
